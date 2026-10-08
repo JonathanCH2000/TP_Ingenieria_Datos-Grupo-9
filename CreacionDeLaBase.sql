@@ -39,3 +39,11 @@ create table evento(
 	constraint check_estado check (estado IN ('ACTIVO','FINALIZADO'))
 );
 go
+create table cliente(
+	id_cliente int identity,
+	nombre varchar(30) not null,
+	apellido varchar(30) not null,
+	email varchar(30) not null,
+
+	constraint pk_id_cliente primary key (id_cliente)
+);
