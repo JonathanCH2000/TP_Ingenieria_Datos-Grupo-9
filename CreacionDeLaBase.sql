@@ -47,3 +47,18 @@ create table cliente(
 
 	constraint pk_id_cliente primary key (id_cliente)
 );
+
+create table compra(
+	id_compra int identity,
+	id_cliente int not null,
+	fecha datetime not null,
+	total float not null,
+	estado_pago varchar(30) not null,
+
+	constraint pk_id_compra primary key (id_compra),
+	constraint fk_id_cliente foreign key (id_cliente) 
+		references cliente(id_cliente),
+	constraint check_estado_pago check (estado_pago IN ('PENDIENTE','PAGADO','CANCELADO'))
+);
+
+
