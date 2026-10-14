@@ -1,6 +1,8 @@
-create database GestionDeEntradas
-use GestionDeEntradas
+create database GestionDeEntradas;
 go
+use GestionDeEntradas;
+go
+
 create table organizador(
 	id_organizador int identity,
 	cuit varchar(30) not null,
@@ -47,6 +49,7 @@ create table cliente(
 
 	constraint pk_id_cliente primary key (id_cliente)
 );
+go
 
 create table compra(
 	id_compra int identity,
@@ -60,5 +63,25 @@ create table compra(
 		references cliente(id_cliente),
 	constraint check_estado_pago check (estado_pago IN ('PENDIENTE','PAGADO','CANCELADO'))
 );
+go
+create table entrada(
+    id_entrada int identity,
+    id_compra int not null,
+    id_evento int not null,
+    codigo varchar(30) not null,
+    precio decimal(10,2) not null,
+    estado varchar(30) not null,
+
+    constraint pk_id_entrada primary key (id_entrada),
+    constraint fk_id_compra foreign key (id_compra)
+        references compra(id_compra),
+    constraint fk_id_evento foreign key (id_evento)
+        references evento(id_evento),
+    constraint uq_codigo unique (codigo),
+    constraint check_precio check (precio >= 0),
+    constraint check_estado_entrada
+        check (estado IN ('HABILITADA','UTILIZADA','ANULADA'))
+);
+go
 
 
