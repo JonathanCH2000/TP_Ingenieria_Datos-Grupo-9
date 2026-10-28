@@ -1,3 +1,16 @@
+USE master;
+GO
+
+IF DB_ID('GestionDeEntradas') IS NOT NULL
+BEGIN
+    ALTER DATABASE GestionDeEntradas SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE GestionDeEntradas;
+END
+GO
+
+CREATE DATABASE GestionDeEntradas;
+GO
+
 USE GestionDeEntradas;
 GO
 
