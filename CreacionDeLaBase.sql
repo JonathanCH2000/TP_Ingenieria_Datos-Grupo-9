@@ -1,15 +1,3 @@
-USE master;
-GO
-
-IF DB_ID('GestionDeEntradas') IS NOT NULL
-BEGIN
-    ALTER DATABASE GestionDeEntradas SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE GestionDeEntradas;
-END
-GO
-
-CREATE DATABASE GestionDeEntradas;
-GO
 USE GestionDeEntradas;
 GO
 
@@ -57,7 +45,7 @@ create table evento(
         references organizador(id_organizador),
     constraint fk_evento_lugar foreign key (id_lugar)
         references lugar(id_lugar),
-    constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO','CANCELADO')),
+    constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO')),
     constraint ck_evento_horario check (hora_fin > hora_inicio)
 );
 GO
