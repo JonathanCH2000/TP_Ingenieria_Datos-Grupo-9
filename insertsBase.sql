@@ -1,7 +1,6 @@
 USE GestionDeEntradas;
 GO
 
-
 INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
 ('20-30123456-7', 'Martin', 'Gomez', '11-4523-1100', 'mgomez@produccionesmg.com'),
 ('27-28987654-3', 'Lucia', 'Fernandez', '11-4789-2200', 'lfernandez@lfeventos.com'),
@@ -14,7 +13,6 @@ INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
 ('30-70555444-6', 'Gaston', 'Vega', '11-4855-1010', 'gvega@vegashows.com'),
 ('20-25111222-5', 'Pablo', 'Ibarra', '11-3987-5500', 'pibarra@ibarrashows.com');
 GO
-
 
 INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
 ('Estadio Luna Park', 'Av. Madero 420, CABA', 8000),
@@ -29,11 +27,10 @@ INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
 ('Teatro Opera', 'Av. Corrientes 860, CABA', 2000);
 GO
 
-
 INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) VALUES
 (1, 1, 'Rock en el Luna', '20260815', '21:00', '23:30', 'FINALIZADO'),
 (2, 2, 'Stand Up Noche de Risas', '20260905', '20:30', '22:30', 'FINALIZADO'),
-(3, 3, 'Electro Night', '20260920', '23:00', '05:00', 'FINALIZADO'),
+(3, 3, 'Electro Night', '20260920', '20:00', '23:59', 'FINALIZADO'),
 (4, 4, 'Jazz en la Trastienda', '20261010', '21:00', '23:00', 'ACTIVO'),
 (5, 5, 'Festival Indie 2026', '20261114', '18:00', '23:59', 'ACTIVO'),
 (6, 6, 'Opera Popular', '20261121', '20:00', '22:30', 'ACTIVO'),
@@ -56,7 +53,6 @@ INSERT INTO cliente (nombre, apellido, email) VALUES
 ('Florencia', 'Medina', 'fmedina@gmail.com');
 GO
 
-
 INSERT INTO compra (id_cliente, fecha, total, estado_pago) VALUES
 (1, '2026-07-20T10:15:00', 45000.00, 'PAGADO'),
 (2, '2026-07-25T18:40:00', 45000.00, 'PAGADO'),
@@ -69,7 +65,6 @@ INSERT INTO compra (id_cliente, fecha, total, estado_pago) VALUES
 (8, '2026-10-22T20:15:00', 18000.00, 'PAGADO'),
 (2, '2026-10-27T12:40:00', 52000.00, 'PENDIENTE');
 GO
-
 
 INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
 (1, 1, 'ENT-0001', 45000.00, 'UTILIZADA'),
@@ -84,3 +79,10 @@ INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
 (10, 6, 'ENT-0010', 52000.00, 'HABILITADA');
 GO
 
+SELECT 'organizador' AS tabla, COUNT(*) AS filas FROM organizador UNION ALL
+SELECT 'lugar', COUNT(*) FROM lugar UNION ALL
+SELECT 'evento', COUNT(*) FROM evento UNION ALL
+SELECT 'cliente', COUNT(*) FROM cliente UNION ALL
+SELECT 'compra', COUNT(*) FROM compra UNION ALL
+SELECT 'entrada', COUNT(*) FROM entrada;
+GO
