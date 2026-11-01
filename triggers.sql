@@ -64,3 +64,29 @@ BEGIN
         AND e.estado <> 'ANULADA';
 END;
 GO
+
+-- Evita que dos eventos se superpongan en el mismo lugar y fecha.
+CREATE TRIGGER trg_evitar_superposicion_eventos
+ON evento
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Comparamos con otros eventos del mismo lugar y fecha.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        JOIN evento AS e
+            ON i.id_lugar = e.id_lugar
+            AND i.fecha = e.fecha
+            AND i.id_evento <> e.id_evento
+        -- Revisamos si los horarios se cruzan.
+        WHERE i.hora_inicio < e.hora_fin
+            AND i.hora_fin > e.hora_inicio
+    )
+    BEGIN
+        THROW 50002, 'El lugar ya tiene un evento en ese horario.', 1;
+    END;
+END;
+GO
