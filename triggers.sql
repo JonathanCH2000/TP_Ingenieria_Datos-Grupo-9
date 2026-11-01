@@ -90,3 +90,55 @@ BEGIN
     END;
 END;
 GO
+
+-- Controla el cupo al agregar o modificar entradas.
+CREATE TRIGGER trg_controlar_cupo_entradas
+ON entrada
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Ejecutamos el procedimiento que comprueba la capacidad.
+    EXEC validar_cupo_eventos;
+END;
+GO
+
+-- Controla el cupo cuando se actualiza el estado de pago.
+CREATE TRIGGER trg_controlar_cupo_compras
+ON compra
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF UPDATE(estado_pago)
+        EXEC validar_cupo_eventos;
+END;
+GO
+
+-- Controla el cupo cuando se cambia el lugar de un evento.
+CREATE TRIGGER trg_controlar_cupo_eventos
+ON evento
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF UPDATE(id_lugar)
+        EXEC validar_cupo_eventos;
+END;
+GO
+
+-- Controla el cupo cuando se modifica la capacidad de un lugar.
+CREATE TRIGGER trg_controlar_cupo_lugares
+ON lugar
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF UPDATE(capacidad)
+        EXEC validar_cupo_eventos;
+END;
+GO
