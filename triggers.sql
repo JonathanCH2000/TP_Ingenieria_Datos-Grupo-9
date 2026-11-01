@@ -28,3 +28,39 @@ BEGIN
     );
 END;
 GO
+
+-- Anula las entradas cuando se cancela una compra.
+CREATE TRIGGER trg_cancelar_compra
+ON compra
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Si no se actualiza el estado de pago, terminamos.
+    IF NOT UPDATE(estado_pago)
+        RETURN;
+
+    -- Revisamos si alguna compra que se cancela tiene entradas utilizadas.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        JOIN entrada AS e
+            ON i.id_compra = e.id_compra
+        WHERE i.estado_pago = 'CANCELADO'
+            AND e.estado = 'UTILIZADA'
+    )
+    BEGIN
+        THROW 50001, 'No se puede cancelar una compra con entradas utilizadas.', 1;
+    END;
+
+    -- Anulamos las entradas de las compras canceladas.
+    UPDATE e
+    SET estado = 'ANULADA'
+    FROM entrada AS e
+    JOIN inserted AS i
+        ON e.id_compra = i.id_compra
+    WHERE i.estado_pago = 'CANCELADO'
+        AND e.estado <> 'ANULADA';
+END;
+GO
