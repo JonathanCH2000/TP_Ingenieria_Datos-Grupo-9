@@ -37,3 +37,23 @@ WHERE NOT EXISTS (
         WHERE en.id_evento = e.id_evento
       )
 ORDER BY e.fecha;
+
+-- Subconsulta 3
+-- Compras cuyo importe supera el promedio histórico de compras de ese mismo cliente.
+
+SELECT c.id_cliente,
+       c.nombre,
+       c.apellido,
+       co.id_compra,
+       co.fecha,
+       co.total,
+       co.estado_pago
+FROM compra AS co
+INNER JOIN cliente AS c
+    ON co.id_cliente = c.id_cliente
+WHERE co.total > (
+        SELECT AVG(co2.total)
+        FROM compra AS co2
+        WHERE co2.id_cliente = co.id_cliente
+      )
+ORDER BY c.apellido, co.total DESC;
