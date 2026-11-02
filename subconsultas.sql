@@ -57,3 +57,27 @@ WHERE co.total > (
         WHERE co2.id_cliente = co.id_cliente
       )
 ORDER BY c.apellido, co.total DESC;
+
+-- Subconsulta 4
+-- Evento con mayor recaudación confirmada.
+
+SELECT TOP 1 WITH TIES
+       r.id_evento,
+       r.nombre_evento,
+       r.fecha,
+       r.entradas_vendidas,
+       r.recaudacion
+FROM (SELECT ev.id_evento,
+             ev.nombre_evento,
+             ev.fecha,
+             COUNT(en.id_entrada) AS entradas_vendidas,
+             SUM(en.precio)       AS recaudacion
+      FROM evento AS ev
+      INNER JOIN entrada AS en
+          ON ev.id_evento = en.id_evento
+      INNER JOIN compra AS co
+          ON en.id_compra = co.id_compra
+      WHERE co.estado_pago = 'PAGADO'
+        AND en.estado <> 'ANULADA'
+      GROUP BY ev.id_evento, ev.nombre_evento, ev.fecha) AS r
+ORDER BY r.recaudacion DESC;
