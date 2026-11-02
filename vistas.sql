@@ -76,3 +76,30 @@ WHERE en.estado    = 'HABILITADA'
   AND co.estado_pago = 'PAGADO'
   AND ev.estado    = 'ACTIVO';
 GO
+
+-- vw_recaudacion_organizador
+-- Facturación acumulada por organizador, considerando únicamente ventas confirmadas.
+
+CREATE VIEW vw_recaudacion_organizador AS
+SELECT o.id_organizador,
+       o.cuit,
+       o.nombre,
+       o.apellido,
+       COUNT(DISTINCT ev.id_evento)           AS eventos_organizados,
+       ISNULL(SUM(vt.entradas_vendidas), 0)   AS entradas_vendidas,
+       ISNULL(SUM(vt.recaudacion), 0)         AS recaudacion
+FROM organizador AS o
+LEFT JOIN evento AS ev
+    ON ev.id_organizador = o.id_organizador
+LEFT JOIN (SELECT en.id_evento,
+                  COUNT(*)       AS entradas_vendidas,
+                  SUM(en.precio) AS recaudacion
+           FROM entrada AS en
+           INNER JOIN compra AS co
+               ON en.id_compra = co.id_compra
+           WHERE co.estado_pago = 'PAGADO'
+             AND en.estado <> 'ANULADA'
+           GROUP BY en.id_evento) AS vt
+    ON vt.id_evento = ev.id_evento
+GROUP BY o.id_organizador, o.cuit, o.nombre, o.apellido;
+GO
