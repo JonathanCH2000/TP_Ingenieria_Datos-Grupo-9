@@ -26,3 +26,23 @@ LEFT JOIN (SELECT en.id_evento,
            GROUP BY en.id_evento) AS oc
     ON oc.id_evento = ev.id_evento;
 GO
+
+-- vw_compras_detalle
+-- Compras con su cliente, total histórico, monto vigente y monto anulado.
+
+CREATE VIEW vw_compras_detalle AS
+SELECT co.id_compra,
+       co.fecha,
+       c.id_cliente,
+       c.nombre,
+       c.apellido,
+       c.email,
+       co.estado_pago,
+       co.total                     AS total_historico,
+       v.monto_vigente,
+       co.total - v.monto_vigente   AS monto_anulado
+FROM compra AS co
+INNER JOIN cliente AS c
+    ON co.id_cliente = c.id_cliente
+CROSS APPLY (SELECT dbo.fn_monto_vigente_compra(co.id_compra) AS monto_vigente) AS v;
+GO
