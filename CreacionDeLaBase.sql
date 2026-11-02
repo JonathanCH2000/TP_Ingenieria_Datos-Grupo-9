@@ -57,7 +57,7 @@ create table evento(
         references organizador(id_organizador),
     constraint fk_evento_lugar foreign key (id_lugar)
         references lugar(id_lugar),
-    constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO','CANCELADO')),
+    constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO')),
     constraint ck_evento_horario check (hora_fin > hora_inicio)
 );
 GO
@@ -110,4 +110,22 @@ create table entrada(
     constraint ck_entrada_precio check (precio >= 0),
     constraint ck_entrada_estado check (estado in ('HABILITADA','UTILIZADA','ANULADA'))
 );
+GO
+
+create trigger tr_entrada_recalcular_total
+on entrada
+after insert, update, delete
+as
+begin
+    set nocount on;
+
+    update c
+    set total = isnull((select sum(e.precio)
+                        from entrada e
+                        where e.id_compra = c.id_compra), 0)
+    from compra c
+    where c.id_compra in (select id_compra from inserted
+                          union
+                          select id_compra from deleted);
+end;
 GO

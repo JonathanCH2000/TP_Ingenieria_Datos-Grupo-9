@@ -31,13 +31,13 @@ INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio,
 (1, 1, 'Rock en el Luna', '20260815', '21:00', '23:30', 'FINALIZADO'),
 (2, 2, 'Stand Up Noche de Risas', '20260905', '20:30', '22:30', 'FINALIZADO'),
 (3, 3, 'Electro Night', '20260920', '20:00', '23:59', 'FINALIZADO'),
-(4, 4, 'Jazz en la Trastienda', '20261010', '21:00', '23:00', 'ACTIVO'),
-(5, 5, 'Festival Indie 2026', '20261114', '18:00', '23:59', 'ACTIVO'),
-(6, 6, 'Opera Popular', '20261121', '20:00', '22:30', 'ACTIVO'),
-(7, 7, 'Acustico Intimo', '20261128', '21:00', '22:30', 'ACTIVO'),
-(8, 8, 'Tango Joven', '20261205', '21:30', '23:30', 'ACTIVO'),
-(9, 9, 'Noche de Boleros', '20261212', '21:00', '23:00', 'ACTIVO'),
-(1, 2, 'Gala Sinfonica', '20261219', '20:00', '22:00', 'ACTIVO');
+(4, 4, 'Jazz en la Trastienda', '20261010', '21:00', '23:00', 'FINALIZADO'),
+(5, 5, 'Festival Indie 2026', '20261205', '18:00', '23:59', 'ACTIVO'),
+(6, 6, 'Opera Popular', '20261212', '20:00', '22:30', 'ACTIVO'),
+(7, 7, 'Acustico Intimo', '20261219', '21:00', '22:30', 'ACTIVO'),
+(8, 8, 'Tango Joven', '20261228', '21:30', '23:30', 'ACTIVO'),
+(9, 9, 'Noche de Boleros', '20270109', '21:00', '23:00', 'ACTIVO'),
+(1, 2, 'Gala Sinfonica', '20270116', '20:00', '22:00', 'ACTIVO');
 GO
 
 INSERT INTO cliente (nombre, apellido, email) VALUES
@@ -59,11 +59,13 @@ INSERT INTO compra (id_cliente, fecha, total, estado_pago) VALUES
 (3, '2026-08-20T09:30:00', 28000.00, 'PAGADO'),
 (4, '2026-08-28T21:10:00', 28000.00, 'CANCELADO'),
 (5, '2026-09-01T16:45:00', 32000.00, 'PAGADO'),
-(1, '2026-10-05T19:00:00', 25000.00, 'PENDIENTE'),
+(1, '2026-10-05T19:00:00', 25000.00, 'PAGADO'),
 (6, '2026-10-12T22:30:00', 38000.00, 'PAGADO'),
 (7, '2026-10-20T14:00:00', 18000.00, 'PAGADO'),
 (8, '2026-10-22T20:15:00', 18000.00, 'PAGADO'),
-(2, '2026-10-27T12:40:00', 52000.00, 'PENDIENTE');
+(2, '2026-10-27T12:40:00', 52000.00, 'PENDIENTE'),
+(1, '2026-10-29T11:20:00', 42000.00, 'PAGADO'),
+(1, '2026-10-30T18:05:00', 22000.00, 'PAGADO');
 GO
 
 INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
@@ -72,17 +74,11 @@ INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
 (3, 2, 'ENT-0003', 28000.00, 'UTILIZADA'),
 (4, 2, 'ENT-0004', 28000.00, 'ANULADA'),
 (5, 3, 'ENT-0005', 32000.00, 'UTILIZADA'),
-(6, 4, 'ENT-0006', 25000.00, 'HABILITADA'),
+(6, 4, 'ENT-0006', 25000.00, 'UTILIZADA'),
 (7, 5, 'ENT-0007', 38000.00, 'HABILITADA'),
 (8, 7, 'ENT-0008', 18000.00, 'HABILITADA'),
 (9, 7, 'ENT-0009', 18000.00, 'HABILITADA'),
-(10, 6, 'ENT-0010', 52000.00, 'HABILITADA');
-GO
-
-SELECT 'organizador' AS tabla, COUNT(*) AS filas FROM organizador UNION ALL
-SELECT 'lugar', COUNT(*) FROM lugar UNION ALL
-SELECT 'evento', COUNT(*) FROM evento UNION ALL
-SELECT 'cliente', COUNT(*) FROM cliente UNION ALL
-SELECT 'compra', COUNT(*) FROM compra UNION ALL
-SELECT 'entrada', COUNT(*) FROM entrada;
+(10, 6, 'ENT-0010', 52000.00, 'HABILITADA'),
+(11, 5, 'ENT-0011', 42000.00, 'HABILITADA'),
+(12, 8, 'ENT-0012', 22000.00, 'HABILITADA');
 GO
