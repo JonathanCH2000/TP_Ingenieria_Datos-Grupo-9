@@ -64,3 +64,6 @@ where co.estado_pago = 'PAGADO'
 group by c.id_cliente, c.nombre, c.apellido, c.email
 having count(co.id_compra) > 2;
 go
+
+USE GestionDeEntradas;
+GO
