@@ -46,3 +46,33 @@ INNER JOIN cliente AS c
     ON co.id_cliente = c.id_cliente
 CROSS APPLY (SELECT dbo.fn_monto_vigente_compra(co.id_compra) AS monto_vigente) AS v;
 GO
+
+-- vw_entradas_habilitadas
+-- Entradas que cumplen las tres condiciones de ingreso.
+
+CREATE VIEW vw_entradas_habilitadas AS
+SELECT en.id_entrada,
+       en.codigo,
+       en.precio,
+       ev.id_evento,
+       ev.nombre_evento,
+       ev.fecha,
+       ev.hora_inicio,
+       l.nombre_lugar,
+       co.id_compra,
+       c.id_cliente,
+       c.nombre    AS nombre_cliente,
+       c.apellido  AS apellido_cliente
+FROM entrada AS en
+INNER JOIN compra AS co
+    ON en.id_compra = co.id_compra
+INNER JOIN evento AS ev
+    ON en.id_evento = ev.id_evento
+INNER JOIN lugar AS l
+    ON ev.id_lugar = l.id_lugar
+INNER JOIN cliente AS c
+    ON co.id_cliente = c.id_cliente
+WHERE en.estado    = 'HABILITADA'
+  AND co.estado_pago = 'PAGADO'
+  AND ev.estado    = 'ACTIVO';
+GO
