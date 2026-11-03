@@ -35,3 +35,20 @@ BEGIN
     RETURN @total;
 END;
 GO
+
+-- fn_cupo_disponible_evento
+-- Lugares disponibles en un evento.
+
+CREATE FUNCTION dbo.fn_cupo_disponible_evento (@id_evento INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @cupo INT;
+
+    SELECT @cupo = cupo_disponible
+    FROM vw_ocupacion_evento
+    WHERE id_evento = @id_evento;
+
+    RETURN ISNULL(@cupo, 0);
+END;
+GO
