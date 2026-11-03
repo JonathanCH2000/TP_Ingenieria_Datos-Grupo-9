@@ -18,3 +18,20 @@ BEGIN
     RETURN @monto;
 END;
 GO
+
+
+-- Suma el precio de todas las entradas de una compra, sin distinción de estado.
+
+CREATE FUNCTION dbo.fn_total_calculado_compra (@id_compra INT)
+RETURNS DECIMAL(12,2)
+AS
+BEGIN
+    DECLARE @total DECIMAL(12,2);
+
+    SELECT @total = ISNULL(SUM(e.precio), 0)
+    FROM entrada AS e
+    WHERE e.id_compra = @id_compra;
+
+    RETURN @total;
+END;
+GO
