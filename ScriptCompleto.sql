@@ -3,14 +3,17 @@
 use master;
 go
 
-drop database if exists GestionDeEntradas;
-go
-
-create database GestionDeEntradas;
-go
-
-use GestionDeEntradas;
-go
+IF DB_ID('GestionDeEntradas') IS NOT NULL
+BEGIN
+    ALTER DATABASE GestionDeEntradas SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE GestionDeEntradas;
+END
+GO
+ 
+CREATE DATABASE GestionDeEntradas;
+GO
+USE GestionDeEntradas;
+GO
 
 create table organizador(
 	id_organizador int identity,
