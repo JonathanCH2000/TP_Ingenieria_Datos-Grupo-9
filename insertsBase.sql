@@ -1,7 +1,7 @@
-USE GestionDeEntradas;
-GO
+use GestionDeEntradas;
+go
 
-INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
+insert into organizador (cuit, nombre, apellido, telefono, email) values
 ('20-30123456-7', 'Martin', 'Gomez', '11-4523-1100', 'mgomez@produccionesmg.com'),
 ('27-28987654-3', 'Lucia', 'Fernandez', '11-4789-2200', 'lfernandez@lfeventos.com'),
 ('30-71234567-9', 'Diego', 'Ramirez', '11-5034-3300', 'dramirez@sonarte.com'),
@@ -12,9 +12,9 @@ INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
 ('27-35888999-0', 'Micaela', 'Herrera', '11-3744-9900', 'mherrera@escenaviva.com'),
 ('30-70555444-6', 'Gaston', 'Vega', '11-4855-1010', 'gvega@vegashows.com'),
 ('20-25111222-5', 'Pablo', 'Ibarra', '11-3987-5500', 'pibarra@ibarrashows.com');
-GO
+go
 
-INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
+insert into lugar (nombre_lugar, direccion, capacidad) values
 ('Estadio Luna Park', 'Av. Madero 420, CABA', 8000),
 ('Teatro Gran Rex', 'Av. Corrientes 857, CABA', 3300),
 ('Niceto Club', 'Niceto Vega 5510, CABA', 1000),
@@ -25,9 +25,9 @@ INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
 ('Club Cultural Matienzo', 'Pringles 1249, CABA', 300),
 ('Teatro Maipo', 'Esmeralda 443, CABA', 700),
 ('Teatro Opera', 'Av. Corrientes 860, CABA', 2000);
-GO
+go
 
-INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) VALUES
+insert into evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) values
 (1, 1, 'Rock en el Luna', '20260815', '21:00', '23:30', 'FINALIZADO'),
 (2, 2, 'Stand Up Noche de Risas', '20260905', '20:30', '22:30', 'FINALIZADO'),
 (3, 3, 'Electro Night', '20260920', '20:00', '23:59', 'FINALIZADO'),
@@ -38,9 +38,9 @@ INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio,
 (8, 8, 'Tango Joven', '20261228', '21:30', '23:30', 'ACTIVO'),
 (9, 9, 'Noche de Boleros', '20270109', '21:00', '23:00', 'ACTIVO'),
 (1, 2, 'Gala Sinfonica', '20270116', '20:00', '22:00', 'ACTIVO');
-GO
+go
 
-INSERT INTO cliente (nombre, apellido, email) VALUES
+insert into cliente (nombre, apellido, email) values
 ('Juan', 'Perez', 'jperez@gmail.com'),
 ('Maria', 'Lopez', 'mlopez@gmail.com'),
 ('Santiago', 'Garcia', 'sgarcia@hotmail.com'),
@@ -51,24 +51,24 @@ INSERT INTO cliente (nombre, apellido, email) VALUES
 ('Sofia', 'Romero', 'sromero@gmail.com'),
 ('Joaquin', 'Acosta', 'jacosta@gmail.com'),
 ('Florencia', 'Medina', 'fmedina@gmail.com');
-GO
+go
 
-INSERT INTO compra (id_cliente, fecha, total, estado_pago) VALUES
-(1, '2026-07-20T10:15:00', 45000.00, 'PAGADO'),
-(2, '2026-07-25T18:40:00', 45000.00, 'PAGADO'),
-(3, '2026-08-20T09:30:00', 28000.00, 'PAGADO'),
-(4, '2026-08-28T21:10:00', 28000.00, 'CANCELADO'),
-(5, '2026-09-01T16:45:00', 32000.00, 'PAGADO'),
-(1, '2026-10-05T19:00:00', 25000.00, 'PAGADO'),
-(6, '2026-10-12T22:30:00', 38000.00, 'PAGADO'),
-(7, '2026-10-20T14:00:00', 18000.00, 'PAGADO'),
-(8, '2026-10-22T20:15:00', 18000.00, 'PAGADO'),
-(2, '2026-10-27T12:40:00', 52000.00, 'PENDIENTE'),
-(1, '2026-10-29T11:20:00', 42000.00, 'PAGADO'),
-(1, '2026-10-30T18:05:00', 22000.00, 'PAGADO');
-GO
+insert into compra (id_cliente, fecha, total, estado_pago) values
+(1, '20260720 10:15:00', 45000.00, 'PAGADO'),
+(2, '20260725 18:40:00', 45000.00, 'PAGADO'),
+(3, '20260820 09:30:00', 28000.00, 'PAGADO'),
+(4, '20260828 21:10:00', 28000.00, 'CANCELADO'),
+(5, '20260901 16:45:00', 32000.00, 'PAGADO'),
+(1, '20261005 19:00:00', 25000.00, 'PAGADO'),
+(6, '20261012 22:30:00', 38000.00, 'PAGADO'),
+(7, '20261020 14:00:00', 18000.00, 'PAGADO'),
+(8, '20261022 20:15:00', 18000.00, 'PAGADO'),
+(2, '20261027 12:40:00', 52000.00, 'PENDIENTE'),
+(1, '20261029 11:20:00', 42000.00, 'PAGADO'),
+(1, '20261030 18:05:00', 22000.00, 'PAGADO');
+go
 
-INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
+insert into entrada (id_compra, id_evento, codigo, precio, estado) values
 (1, 1, 'ENT-0001', 45000.00, 'UTILIZADA'),
 (2, 1, 'ENT-0002', 45000.00, 'HABILITADA'),
 (3, 2, 'ENT-0003', 28000.00, 'UTILIZADA'),
@@ -81,4 +81,4 @@ INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
 (10, 6, 'ENT-0010', 52000.00, 'HABILITADA'),
 (11, 5, 'ENT-0011', 42000.00, 'HABILITADA'),
 (12, 8, 'ENT-0012', 22000.00, 'HABILITADA');
-GO
+go

@@ -1,41 +1,52 @@
-USE GestionDeEntradas;
-GO
+use GestionDeEntradas;
+go
 
-CREATE ROLE rol_administrador;
-CREATE ROLE rol_vendedor;
-CREATE ROLE rol_consulta;
-GO
+if not exists (select name from sys.server_principals where name = 'login_admin')
+	create login login_admin with password = 'Admin.2026';
+if not exists (select name from sys.server_principals where name = 'login_vendedor')
+	create login login_vendedor with password = 'Vendedor.2026';
+if not exists (select name from sys.server_principals where name = 'login_analista')
+	create login login_analista with password = 'Analista.2026';
+go
 
-CREATE USER usr_admin WITHOUT LOGIN;
-CREATE USER usr_vendedor WITHOUT LOGIN;
-CREATE USER usr_analista WITHOUT LOGIN;
-GO
+create user usr_admin for login login_admin;
+create user usr_vendedor for login login_vendedor;
+create user usr_analista for login login_analista;
+go
 
-ALTER ROLE rol_administrador ADD MEMBER usr_admin;
-ALTER ROLE rol_vendedor ADD MEMBER usr_vendedor;
-ALTER ROLE rol_consulta ADD MEMBER usr_analista;
-GO
+create role rol_administrador;
+create role rol_vendedor;
+create role rol_consulta;
+go
 
-GRANT CONTROL ON SCHEMA::dbo TO rol_administrador;
-GO
+alter role rol_administrador add member usr_admin;
+alter role rol_vendedor add member usr_vendedor;
+alter role rol_consulta add member usr_analista;
+go
 
-GRANT SELECT ON dbo.evento TO rol_vendedor;
-GRANT SELECT ON dbo.lugar TO rol_vendedor;
-GRANT SELECT, INSERT, UPDATE ON dbo.cliente TO rol_vendedor;
-GRANT SELECT ON dbo.compra TO rol_vendedor;
-GRANT SELECT ON dbo.entrada TO rol_vendedor;
-GRANT EXECUTE ON SCHEMA::dbo TO rol_vendedor;
-GO
+grant select, insert, update, delete on organizador to rol_administrador;
+grant select, insert, update, delete on lugar to rol_administrador;
+grant select, insert, update, delete on evento to rol_administrador;
+grant select, insert, update, delete on cliente to rol_administrador;
+grant select, insert, update, delete on compra to rol_administrador;
+grant select, insert, update, delete on entrada to rol_administrador;
+go
 
-GRANT SELECT ON dbo.evento TO rol_consulta;
-GRANT SELECT ON dbo.lugar TO rol_consulta;
-GRANT SELECT ON dbo.compra TO rol_consulta;
-GRANT SELECT ON dbo.entrada TO rol_consulta;
-GRANT SELECT ON dbo.organizador (id_organizador, nombre, apellido) TO rol_consulta;
-GRANT SELECT ON dbo.cliente (id_cliente, nombre, apellido) TO rol_consulta;
-GO
+grant select on evento to rol_vendedor;
+grant select on lugar to rol_vendedor;
+grant select, insert, update on cliente to rol_vendedor;
+grant select, insert, update, delete on compra to rol_vendedor;
+grant select, insert, update, delete on entrada to rol_vendedor;
+go
 
-REVOKE INSERT, UPDATE, DELETE ON dbo.compra FROM rol_vendedor;
-REVOKE INSERT, UPDATE, DELETE ON dbo.entrada FROM rol_vendedor;
-REVOKE INSERT, UPDATE, DELETE ON SCHEMA::dbo FROM rol_consulta;
-GO
+revoke delete on compra from rol_vendedor;
+revoke delete on entrada from rol_vendedor;
+go
+
+grant select on evento to rol_consulta;
+grant select on lugar to rol_consulta;
+grant select on compra to rol_consulta;
+grant select on entrada to rol_consulta;
+grant select (id_organizador, nombre, apellido) on organizador to rol_consulta;
+grant select (id_cliente, nombre, apellido) on cliente to rol_consulta;
+go

@@ -1,141 +1,124 @@
 /*LA IDEA DE ESTE ARCHIVO ES PODER CORRER TODO DE UNA A VER SI DA ERRORS O ALGO POR EL ESTILO*/
 
-USE master;
-GO
+use master;
+go
 
-IF DB_ID('GestionDeEntradas') IS NOT NULL
-BEGIN
-    ALTER DATABASE GestionDeEntradas SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE GestionDeEntradas;
-END
-GO
+drop database if exists GestionDeEntradas;
+go
 
-CREATE DATABASE GestionDeEntradas;
-GO
-USE GestionDeEntradas;
-GO
+create database GestionDeEntradas;
+go
+
+use GestionDeEntradas;
+go
 
 create table organizador(
-    id_organizador int identity(1,1),
-    cuit varchar(13) not null,
-    nombre varchar(50) not null,
-    apellido varchar(50) not null,
-    telefono varchar(20) not null,
-    email varchar(100) not null,
+	id_organizador int identity,
+	cuit varchar(13) not null,
+	nombre varchar(50) not null,
+	apellido varchar(50) not null,
+	telefono varchar(20) not null,
+	email varchar(100) not null,
 
-    constraint pk_organizador primary key (id_organizador),
-    constraint uq_organizador_cuit unique (cuit),
-    constraint uq_organizador_email unique (email),
-    constraint ck_organizador_cuit
-        check (cuit like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
-    constraint ck_organizador_email check (email like '%_@_%._%')
+	constraint pk_organizador primary key (id_organizador),
+	constraint uq_organizador_cuit unique (cuit),
+	constraint uq_organizador_email unique (email),
+	constraint ck_organizador_email check (email like '%@%.%')
 );
-GO
+go
 
 create table lugar(
-    id_lugar int identity(1,1),
-    nombre_lugar varchar(100) not null,
-    direccion varchar(100) not null,
-    capacidad int not null,
+	id_lugar int identity,
+	nombre_lugar varchar(100) not null,
+	direccion varchar(100) not null,
+	capacidad int not null,
 
-    constraint pk_lugar primary key (id_lugar),
-    constraint ck_lugar_capacidad check (capacidad > 0)
+	constraint pk_lugar primary key (id_lugar),
+	constraint ck_lugar_capacidad check (capacidad > 0)
 );
-GO
+go
 
 create table evento(
-    id_evento int identity(1,1),
-    id_organizador int not null,
-    id_lugar int not null,
-    nombre_evento varchar(100) not null,
-    fecha date not null,
-    hora_inicio time(0) not null,
-    hora_fin time(0) not null,
-    estado varchar(20) not null
-        constraint df_evento_estado default 'ACTIVO',
+	id_evento int identity,
+	id_organizador int not null,
+	id_lugar int not null,
+	nombre_evento varchar(100) not null,
+	fecha date not null,
+	hora_inicio time not null,
+	hora_fin time not null,
+	estado varchar(20) not null default 'ACTIVO',
 
-    constraint pk_evento primary key (id_evento),
-    constraint fk_evento_organizador foreign key (id_organizador)
-        references organizador(id_organizador),
-    constraint fk_evento_lugar foreign key (id_lugar)
-        references lugar(id_lugar),
-    constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO')),
-    constraint ck_evento_horario check (hora_fin > hora_inicio)
+	constraint pk_evento primary key (id_evento),
+	constraint fk_evento_organizador foreign key (id_organizador)
+		references organizador(id_organizador),
+	constraint fk_evento_lugar foreign key (id_lugar)
+		references lugar(id_lugar),
+	constraint ck_evento_estado check (estado in ('ACTIVO','FINALIZADO')),
+	constraint ck_evento_horario check (hora_fin > hora_inicio)
 );
-GO
+go
 
 create table cliente(
-    id_cliente int identity(1,1),
-    nombre varchar(50) not null,
-    apellido varchar(50) not null,
-    email varchar(100) not null,
+	id_cliente int identity,
+	nombre varchar(50) not null,
+	apellido varchar(50) not null,
+	email varchar(100) not null,
 
-    constraint pk_cliente primary key (id_cliente),
-    constraint uq_cliente_email unique (email),
-    constraint ck_cliente_email check (email like '%_@_%._%')
+	constraint pk_cliente primary key (id_cliente),
+	constraint uq_cliente_email unique (email),
+	constraint ck_cliente_email check (email like '%@%.%')
 );
-GO
+go
 
 create table compra(
-    id_compra int identity(1,1),
-    id_cliente int not null,
-    fecha datetime not null
-        constraint df_compra_fecha default getdate(),
-    total decimal(12,2) not null
-        constraint df_compra_total default 0,
-    estado_pago varchar(20) not null
-        constraint df_compra_estado_pago default 'PENDIENTE',
+	id_compra int identity,
+	id_cliente int not null,
+	fecha datetime not null default getdate(),
+	total decimal(10,2) not null default 0,
+	estado_pago varchar(20) not null default 'PENDIENTE',
 
-    constraint pk_compra primary key (id_compra),
-    constraint fk_compra_cliente foreign key (id_cliente)
-        references cliente(id_cliente),
-    constraint ck_compra_total check (total >= 0),
-    constraint ck_compra_estado_pago check (estado_pago in ('PENDIENTE','PAGADO','CANCELADO'))
+	constraint pk_compra primary key (id_compra),
+	constraint fk_compra_cliente foreign key (id_cliente)
+		references cliente(id_cliente),
+	constraint ck_compra_total check (total >= 0),
+	constraint ck_compra_estado_pago check (estado_pago in ('PENDIENTE','PAGADO','CANCELADO'))
 );
-GO
+go
 
 create table entrada(
-    id_entrada int identity(1,1),
-    id_compra int not null,
-    id_evento int not null,
-    codigo varchar(20) not null,
-    precio decimal(10,2) not null,
-    estado varchar(20) not null
-        constraint df_entrada_estado default 'HABILITADA',
+	id_entrada int identity,
+	id_compra int not null,
+	id_evento int not null,
+	codigo varchar(20) not null,
+	precio decimal(10,2) not null,
+	estado varchar(20) not null default 'HABILITADA',
 
-    constraint pk_entrada primary key (id_entrada),
-    constraint fk_entrada_compra foreign key (id_compra)
-        references compra(id_compra),
-    constraint fk_entrada_evento foreign key (id_evento)
-        references evento(id_evento),
-    constraint uq_entrada_codigo unique (codigo),
-    constraint ck_entrada_precio check (precio >= 0),
-    constraint ck_entrada_estado check (estado in ('HABILITADA','UTILIZADA','ANULADA'))
+	constraint pk_entrada primary key (id_entrada),
+	constraint fk_entrada_compra foreign key (id_compra)
+		references compra(id_compra),
+	constraint fk_entrada_evento foreign key (id_evento)
+		references evento(id_evento),
+	constraint uq_entrada_codigo unique (codigo),
+	constraint ck_entrada_precio check (precio >= 0),
+	constraint ck_entrada_estado check (estado in ('HABILITADA','UTILIZADA','ANULADA'))
 );
-GO
+go
 
-create trigger tr_entrada_recalcular_total
+create trigger tr_actualizar_total
 on entrada
-after insert, update, delete
+after insert
 as
 begin
-    set nocount on;
-
-    update c
-    set total = isnull((select sum(e.precio)
-                        from entrada e
-                        where e.id_compra = c.id_compra), 0)
-    from compra c
-    where c.id_compra in (select id_compra from inserted
-                          union
-                          select id_compra from deleted);
+	update compra
+	set total = (select sum(precio) from entrada where entrada.id_compra = compra.id_compra)
+	where id_compra in (select id_compra from inserted);
 end;
-GO
+go
 
-USE GestionDeEntradas;
-GO
+use GestionDeEntradas;
+go
 
-INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
+insert into organizador (cuit, nombre, apellido, telefono, email) values
 ('20-30123456-7', 'Martin', 'Gomez', '11-4523-1100', 'mgomez@produccionesmg.com'),
 ('27-28987654-3', 'Lucia', 'Fernandez', '11-4789-2200', 'lfernandez@lfeventos.com'),
 ('30-71234567-9', 'Diego', 'Ramirez', '11-5034-3300', 'dramirez@sonarte.com'),
@@ -146,9 +129,9 @@ INSERT INTO organizador (cuit, nombre, apellido, telefono, email) VALUES
 ('27-35888999-0', 'Micaela', 'Herrera', '11-3744-9900', 'mherrera@escenaviva.com'),
 ('30-70555444-6', 'Gaston', 'Vega', '11-4855-1010', 'gvega@vegashows.com'),
 ('20-25111222-5', 'Pablo', 'Ibarra', '11-3987-5500', 'pibarra@ibarrashows.com');
-GO
+go
 
-INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
+insert into lugar (nombre_lugar, direccion, capacidad) values
 ('Estadio Luna Park', 'Av. Madero 420, CABA', 8000),
 ('Teatro Gran Rex', 'Av. Corrientes 857, CABA', 3300),
 ('Niceto Club', 'Niceto Vega 5510, CABA', 1000),
@@ -159,9 +142,9 @@ INSERT INTO lugar (nombre_lugar, direccion, capacidad) VALUES
 ('Club Cultural Matienzo', 'Pringles 1249, CABA', 300),
 ('Teatro Maipo', 'Esmeralda 443, CABA', 700),
 ('Teatro Opera', 'Av. Corrientes 860, CABA', 2000);
-GO
+go
 
-INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) VALUES
+insert into evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) values
 (1, 1, 'Rock en el Luna', '20260815', '21:00', '23:30', 'FINALIZADO'),
 (2, 2, 'Stand Up Noche de Risas', '20260905', '20:30', '22:30', 'FINALIZADO'),
 (3, 3, 'Electro Night', '20260920', '20:00', '23:59', 'FINALIZADO'),
@@ -172,9 +155,9 @@ INSERT INTO evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio,
 (8, 8, 'Tango Joven', '20261228', '21:30', '23:30', 'ACTIVO'),
 (9, 9, 'Noche de Boleros', '20270109', '21:00', '23:00', 'ACTIVO'),
 (1, 2, 'Gala Sinfonica', '20270116', '20:00', '22:00', 'ACTIVO');
-GO
+go
 
-INSERT INTO cliente (nombre, apellido, email) VALUES
+insert into cliente (nombre, apellido, email) values
 ('Juan', 'Perez', 'jperez@gmail.com'),
 ('Maria', 'Lopez', 'mlopez@gmail.com'),
 ('Santiago', 'Garcia', 'sgarcia@hotmail.com'),
@@ -185,24 +168,24 @@ INSERT INTO cliente (nombre, apellido, email) VALUES
 ('Sofia', 'Romero', 'sromero@gmail.com'),
 ('Joaquin', 'Acosta', 'jacosta@gmail.com'),
 ('Florencia', 'Medina', 'fmedina@gmail.com');
-GO
+go
 
-INSERT INTO compra (id_cliente, fecha, total, estado_pago) VALUES
-(1, '2026-07-20T10:15:00', 45000.00, 'PAGADO'),
-(2, '2026-07-25T18:40:00', 45000.00, 'PAGADO'),
-(3, '2026-08-20T09:30:00', 28000.00, 'PAGADO'),
-(4, '2026-08-28T21:10:00', 28000.00, 'CANCELADO'),
-(5, '2026-09-01T16:45:00', 32000.00, 'PAGADO'),
-(1, '2026-10-05T19:00:00', 25000.00, 'PAGADO'),
-(6, '2026-10-12T22:30:00', 38000.00, 'PAGADO'),
-(7, '2026-10-20T14:00:00', 18000.00, 'PAGADO'),
-(8, '2026-10-22T20:15:00', 18000.00, 'PAGADO'),
-(2, '2026-10-27T12:40:00', 52000.00, 'PENDIENTE'),
-(1, '2026-10-29T11:20:00', 42000.00, 'PAGADO'),
-(1, '2026-10-30T18:05:00', 22000.00, 'PAGADO');
-GO
+insert into compra (id_cliente, fecha, total, estado_pago) values
+(1, '20260720 10:15:00', 45000.00, 'PAGADO'),
+(2, '20260725 18:40:00', 45000.00, 'PAGADO'),
+(3, '20260820 09:30:00', 28000.00, 'PAGADO'),
+(4, '20260828 21:10:00', 28000.00, 'CANCELADO'),
+(5, '20260901 16:45:00', 32000.00, 'PAGADO'),
+(1, '20261005 19:00:00', 25000.00, 'PAGADO'),
+(6, '20261012 22:30:00', 38000.00, 'PAGADO'),
+(7, '20261020 14:00:00', 18000.00, 'PAGADO'),
+(8, '20261022 20:15:00', 18000.00, 'PAGADO'),
+(2, '20261027 12:40:00', 52000.00, 'PENDIENTE'),
+(1, '20261029 11:20:00', 42000.00, 'PAGADO'),
+(1, '20261030 18:05:00', 22000.00, 'PAGADO');
+go
 
-INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
+insert into entrada (id_compra, id_evento, codigo, precio, estado) values
 (1, 1, 'ENT-0001', 45000.00, 'UTILIZADA'),
 (2, 1, 'ENT-0002', 45000.00, 'HABILITADA'),
 (3, 2, 'ENT-0003', 28000.00, 'UTILIZADA'),
@@ -215,57 +198,68 @@ INSERT INTO entrada (id_compra, id_evento, codigo, precio, estado) VALUES
 (10, 6, 'ENT-0010', 52000.00, 'HABILITADA'),
 (11, 5, 'ENT-0011', 42000.00, 'HABILITADA'),
 (12, 8, 'ENT-0012', 22000.00, 'HABILITADA');
-GO
+go
 
--- FUNCIONES (pendiente)
+-- funciones (pendiente)
 
--- VISTAS (pendiente)
+-- vistas (pendiente)
 
--- STORED PROCEDURES (pendiente)
+-- procedimientos (pendiente)
 
--- TRIGGERS (pendiente)
+-- triggers (pendiente)
 
-USE GestionDeEntradas;
-GO
+use GestionDeEntradas;
+go
 
-CREATE ROLE rol_administrador;
-CREATE ROLE rol_vendedor;
-CREATE ROLE rol_consulta;
-GO
+if not exists (select name from sys.server_principals where name = 'login_admin')
+	create login login_admin with password = 'Admin.2026';
+if not exists (select name from sys.server_principals where name = 'login_vendedor')
+	create login login_vendedor with password = 'Vendedor.2026';
+if not exists (select name from sys.server_principals where name = 'login_analista')
+	create login login_analista with password = 'Analista.2026';
+go
 
-CREATE USER usr_admin WITHOUT LOGIN;
-CREATE USER usr_vendedor WITHOUT LOGIN;
-CREATE USER usr_analista WITHOUT LOGIN;
-GO
+create user usr_admin for login login_admin;
+create user usr_vendedor for login login_vendedor;
+create user usr_analista for login login_analista;
+go
 
-ALTER ROLE rol_administrador ADD MEMBER usr_admin;
-ALTER ROLE rol_vendedor ADD MEMBER usr_vendedor;
-ALTER ROLE rol_consulta ADD MEMBER usr_analista;
-GO
+create role rol_administrador;
+create role rol_vendedor;
+create role rol_consulta;
+go
 
-GRANT CONTROL ON SCHEMA::dbo TO rol_administrador;
-GO
+alter role rol_administrador add member usr_admin;
+alter role rol_vendedor add member usr_vendedor;
+alter role rol_consulta add member usr_analista;
+go
 
-GRANT SELECT ON dbo.evento TO rol_vendedor;
-GRANT SELECT ON dbo.lugar TO rol_vendedor;
-GRANT SELECT, INSERT, UPDATE ON dbo.cliente TO rol_vendedor;
-GRANT SELECT ON dbo.compra TO rol_vendedor;
-GRANT SELECT ON dbo.entrada TO rol_vendedor;
-GRANT EXECUTE ON SCHEMA::dbo TO rol_vendedor;
-GO
+grant select, insert, update, delete on organizador to rol_administrador;
+grant select, insert, update, delete on lugar to rol_administrador;
+grant select, insert, update, delete on evento to rol_administrador;
+grant select, insert, update, delete on cliente to rol_administrador;
+grant select, insert, update, delete on compra to rol_administrador;
+grant select, insert, update, delete on entrada to rol_administrador;
+go
 
-GRANT SELECT ON dbo.evento TO rol_consulta;
-GRANT SELECT ON dbo.lugar TO rol_consulta;
-GRANT SELECT ON dbo.compra TO rol_consulta;
-GRANT SELECT ON dbo.entrada TO rol_consulta;
-GRANT SELECT ON dbo.organizador (id_organizador, nombre, apellido) TO rol_consulta;
-GRANT SELECT ON dbo.cliente (id_cliente, nombre, apellido) TO rol_consulta;
-GO
+grant select on evento to rol_vendedor;
+grant select on lugar to rol_vendedor;
+grant select, insert, update on cliente to rol_vendedor;
+grant select, insert, update, delete on compra to rol_vendedor;
+grant select, insert, update, delete on entrada to rol_vendedor;
+go
 
-REVOKE INSERT, UPDATE, DELETE ON dbo.compra FROM rol_vendedor;
-REVOKE INSERT, UPDATE, DELETE ON dbo.entrada FROM rol_vendedor;
-REVOKE INSERT, UPDATE, DELETE ON SCHEMA::dbo FROM rol_consulta;
-GO
+revoke delete on compra from rol_vendedor;
+revoke delete on entrada from rol_vendedor;
+go
 
-SELECT DB_NAME() AS base_actual;
-GO
+grant select on evento to rol_consulta;
+grant select on lugar to rol_consulta;
+grant select on compra to rol_consulta;
+grant select on entrada to rol_consulta;
+grant select (id_organizador, nombre, apellido) on organizador to rol_consulta;
+grant select (id_cliente, nombre, apellido) on cliente to rol_consulta;
+go
+
+select db_name() as base_actual;
+go
