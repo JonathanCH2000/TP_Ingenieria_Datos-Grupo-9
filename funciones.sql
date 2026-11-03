@@ -52,3 +52,22 @@ BEGIN
     RETURN ISNULL(@cupo, 0);
 END;
 GO
+
+-- Indica si una entrada cumple las tres condiciones de ingreso.
+
+CREATE FUNCTION dbo.fn_puede_ingresar (@codigo VARCHAR(20))
+RETURNS BIT
+AS
+BEGIN
+    DECLARE @resultado BIT;
+
+    IF EXISTS (SELECT 1
+               FROM vw_entradas_habilitadas
+               WHERE codigo = @codigo)
+        SET @resultado = 1;
+    ELSE
+        SET @resultado = 0;
+
+    RETURN @resultado;
+END;
+GO
