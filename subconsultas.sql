@@ -1,83 +1,42 @@
--- Subconsulta 1
--- Clientes cuyo gasto confirmado supera el gasto promedio por cliente del sistema.
+use GestionDeEntradas;
+go
 
-SELECT c.id_cliente,
-       c.nombre,
-       c.apellido,
-       c.email,
-       SUM(co.total) AS gasto_total
-FROM cliente AS c
-INNER JOIN compra AS co
-    ON c.id_cliente = co.id_cliente
-WHERE co.estado_pago = 'PAGADO'
-GROUP BY c.id_cliente, c.nombre, c.apellido, c.email
-HAVING SUM(co.total) > (
-        SELECT AVG(gastos.gasto)
-        FROM (SELECT SUM(total) AS gasto
-              FROM compra
-              WHERE estado_pago = 'PAGADO'
-              GROUP BY id_cliente) AS gastos
-      )
-ORDER BY gasto_total DESC;
+--Subconsulta 1: clientes cuyo ticket promedio supera el ticket promedio del sistema
+select c.id_cliente, c.nombre, c.apellido, c.email,
+count(co.id_compra) as cantidad_compras,
+avg(co.total) as ticket_promedio
+from cliente as c
+join compra as co
+on c.id_cliente = co.id_cliente
+where co.estado_pago = 'PAGADO'
+group by c.id_cliente, c.nombre, c.apellido, c.email
+having avg(co.total) > (select avg(total) from compra where estado_pago = 'PAGADO')
+order by ticket_promedio desc;
+go
 
--- Subconsulta 2
--- Eventos que no registran ninguna entrada vendida.
+--Subconsulta 2: eventos que no registran ninguna entrada vendida
+select e.id_evento, e.nombre_evento, e.fecha, e.estado, l.nombre_lugar
+from evento as e
+join lugar as l
+on e.id_lugar = l.id_lugar
+where not exists (select 1 from entrada as en where en.id_evento = e.id_evento)
+order by e.fecha;
+go
 
-SELECT e.id_evento,
-       e.nombre_evento,
-       e.fecha,
-       e.estado,
-       l.nombre_lugar
-FROM evento AS e
-INNER JOIN lugar AS l
-    ON e.id_lugar = l.id_lugar
-WHERE NOT EXISTS (
-        SELECT 1
-        FROM entrada AS en
-        WHERE en.id_evento = e.id_evento
-      )
-ORDER BY e.fecha;
+--Subconsulta 3: compras cuyo importe supera el promedio de ese mismo cliente
+select c.id_cliente, c.nombre, c.apellido, co.id_compra, co.fecha, co.total, co.estado_pago
+from compra as co
+join cliente as c
+on co.id_cliente = c.id_cliente
+where co.total > (select avg(co2.total) from compra as co2 where co2.id_cliente = co.id_cliente)
+order by c.apellido, co.total desc;
+go
 
--- Subconsulta 3
--- Compras cuyo importe supera el promedio histórico de compras de ese mismo cliente.
-
-SELECT c.id_cliente,
-       c.nombre,
-       c.apellido,
-       co.id_compra,
-       co.fecha,
-       co.total,
-       co.estado_pago
-FROM compra AS co
-INNER JOIN cliente AS c
-    ON co.id_cliente = c.id_cliente
-WHERE co.total > (
-        SELECT AVG(co2.total)
-        FROM compra AS co2
-        WHERE co2.id_cliente = co.id_cliente
-      )
-ORDER BY c.apellido, co.total DESC;
-
--- Subconsulta 4
--- Evento con mayor recaudación confirmada.
-
-SELECT TOP 1 WITH TIES
-       r.id_evento,
-       r.nombre_evento,
-       r.fecha,
-       r.entradas_vendidas,
-       r.recaudacion
-FROM (SELECT ev.id_evento,
-             ev.nombre_evento,
-             ev.fecha,
-             COUNT(en.id_entrada) AS entradas_vendidas,
-             SUM(en.precio)       AS recaudacion
-      FROM evento AS ev
-      INNER JOIN entrada AS en
-          ON ev.id_evento = en.id_evento
-      INNER JOIN compra AS co
-          ON en.id_compra = co.id_compra
-      WHERE co.estado_pago = 'PAGADO'
-        AND en.estado <> 'ANULADA'
-      GROUP BY ev.id_evento, ev.nombre_evento, ev.fecha) AS r
-ORDER BY r.recaudacion DESC;
+--Subconsulta 4: entradas cuyo precio supera el precio promedio de todas las entradas
+select en.id_entrada, en.codigo, en.precio, ev.nombre_evento, ev.fecha
+from entrada as en
+join evento as ev
+on en.id_evento = ev.id_evento
+where en.precio > (select avg(precio) from entrada)
+order by en.precio desc;
+go

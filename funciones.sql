@@ -1,44 +1,37 @@
-USE GestionDeEntradas;
-GO
+use GestionDeEntradas;
+go
 
--- monto vigente de una compra
--- Devuelve el monto que sigue siendo válido de una compra, descontando las entradas anuladas.
+--Funcion 1: monto vigente de una compra
+create function dbo.fn_monto_vigente_compra (@id_compra int)
+returns decimal(12,2)
+as
+begin
+    declare @monto decimal(12,2);
 
-CREATE FUNCTION dbo.fn_monto_vigente_compra (@id_compra INT)
-RETURNS DECIMAL(12,2)
-AS
-BEGIN
-    DECLARE @monto DECIMAL(12,2);
+    select @monto = isnull(sum(e.precio), 0)
+    from entrada as e
+    where e.id_compra = @id_compra and e.estado <> 'ANULADA';
 
-    SELECT @monto = ISNULL(SUM(e.precio), 0)
-    FROM entrada AS e
-    WHERE e.id_compra = @id_compra
-      AND e.estado <> 'ANULADA';
+    return @monto;
+end;
+go
 
-    RETURN @monto;
-END;
-GO
+--Funcion 2: total calculado de una compra
+create function dbo.fn_total_calculado_compra (@id_compra int)
+returns decimal(12,2)
+as
+begin
+    declare @total decimal(12,2);
 
+    select @total = isnull(sum(e.precio), 0)
+    from entrada as e
+    where e.id_compra = @id_compra;
 
--- Suma el precio de todas las entradas de una compra, sin distinción de estado.
+    return @total;
+end;
+go
 
-CREATE FUNCTION dbo.fn_total_calculado_compra (@id_compra INT)
-RETURNS DECIMAL(12,2)
-AS
-BEGIN
-    DECLARE @total DECIMAL(12,2);
-
-    SELECT @total = ISNULL(SUM(e.precio), 0)
-    FROM entrada AS e
-    WHERE e.id_compra = @id_compra;
-
-    RETURN @total;
-END;
-GO
-
--- fn_cupo_disponible_evento
--- Lugares disponibles en un evento.
-
+--Funcion 3: cupo disponible de un evento
 create function dbo.fn_cupo_disponible_evento (@id_evento int)
 returns int
 as
@@ -60,8 +53,7 @@ begin
 end;
 go
 
--- Indica si una entrada cumple las tres condiciones de ingreso.
-
+--Funcion 4: indica si una entrada habilita el ingreso
 create function dbo.fn_puede_ingresar (@codigo varchar(20))
 returns bit
 as
