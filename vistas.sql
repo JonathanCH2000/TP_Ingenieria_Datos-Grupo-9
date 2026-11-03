@@ -1,51 +1,29 @@
 USE GestionDeEntradas;
 GO
 
--- vw_ocupacion_evento
--- Ocupación y cupo disponible de cada evento, según la regla 11.
+--Vista 1: ocupacion de cada evento segun la capacidad del lugar
+create view vw_ocupacion_evento as
+select e.id_evento, e.nombre_evento, e.fecha, l.nombre_lugar, l.capacidad,
+       count(en.id_entrada) as entradas_vendidas,
+       l.capacidad - count(en.id_entrada) as cupo_disponible
+from evento as e
+join lugar as l
+on e.id_lugar = l.id_lugar
+left join entrada as en
+on e.id_evento = en.id_evento and en.estado <> 'ANULADA'
+group by e.id_evento, e.nombre_evento, e.fecha, l.nombre_lugar, l.capacidad;
+go
 
-CREATE VIEW vw_ocupacion_evento AS
-SELECT ev.id_evento,
-       ev.nombre_evento,
-       ev.fecha,
-       ev.estado                                        AS estado_evento,
-       l.nombre_lugar,
-       l.capacidad,
-       ISNULL(oc.entradas_ocupadas, 0)                  AS entradas_ocupadas,
-       l.capacidad - ISNULL(oc.entradas_ocupadas, 0)    AS cupo_disponible
-FROM evento AS ev
-INNER JOIN lugar AS l
-    ON ev.id_lugar = l.id_lugar
-LEFT JOIN (SELECT en.id_evento,
-                  COUNT(*) AS entradas_ocupadas
-           FROM entrada AS en
-           INNER JOIN compra AS co
-               ON en.id_compra = co.id_compra
-           WHERE en.estado <> 'ANULADA'
-             AND co.estado_pago <> 'CANCELADO'
-           GROUP BY en.id_evento) AS oc
-    ON oc.id_evento = ev.id_evento;
-GO
-
--- vw_compras_detalle
--- Compras con su cliente, total histórico, monto vigente y monto anulado.
-
-CREATE VIEW vw_compras_detalle AS
-SELECT co.id_compra,
-       co.fecha,
-       c.id_cliente,
-       c.nombre,
-       c.apellido,
-       c.email,
-       co.estado_pago,
-       co.total                     AS total_historico,
-       v.monto_vigente,
-       co.total - v.monto_vigente   AS monto_anulado
-FROM compra AS co
-INNER JOIN cliente AS c
-    ON co.id_cliente = c.id_cliente
-CROSS APPLY (SELECT dbo.fn_monto_vigente_compra(co.id_compra) AS monto_vigente) AS v;
-GO
+--Vista 2: compras con el cliente y el monto que sigue vigente
+create view vw_compras_detalle as
+select co.id_compra, co.fecha, co.estado_pago, c.nombre, c.apellido,
+       co.total,
+       dbo.fn_monto_vigente_compra(co.id_compra) as monto_vigente,
+       co.total - dbo.fn_monto_vigente_compra(co.id_compra) as monto_anulado
+from compra as co
+join cliente as c
+on co.id_cliente = c.id_cliente;
+go
 
 -- vw_entradas_habilitadas
 -- Entradas que cumplen las tres condiciones de ingreso.

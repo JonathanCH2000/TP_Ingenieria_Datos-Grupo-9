@@ -39,35 +39,49 @@ GO
 -- fn_cupo_disponible_evento
 -- Lugares disponibles en un evento.
 
-CREATE FUNCTION dbo.fn_cupo_disponible_evento (@id_evento INT)
-RETURNS INT
-AS
-BEGIN
-    DECLARE @cupo INT;
+create function dbo.fn_cupo_disponible_evento (@id_evento int)
+returns int
+as
+begin
+    declare @capacidad int;
+    declare @vendidas int;
 
-    SELECT @cupo = cupo_disponible
-    FROM vw_ocupacion_evento
-    WHERE id_evento = @id_evento;
+    select @capacidad = l.capacidad
+    from evento as e
+    join lugar as l
+    on e.id_lugar = l.id_lugar
+    where e.id_evento = @id_evento;
 
-    RETURN ISNULL(@cupo, 0);
-END;
-GO
+    select @vendidas = count(*)
+    from entrada
+    where id_evento = @id_evento and estado <> 'ANULADA';
+
+    return isnull(@capacidad, 0) - @vendidas;
+end;
+go
 
 -- Indica si una entrada cumple las tres condiciones de ingreso.
 
-CREATE FUNCTION dbo.fn_puede_ingresar (@codigo VARCHAR(20))
-RETURNS BIT
-AS
-BEGIN
-    DECLARE @resultado BIT;
+create function dbo.fn_puede_ingresar (@codigo varchar(20))
+returns bit
+as
+begin
+    declare @resultado bit;
 
-    IF EXISTS (SELECT 1
-               FROM vw_entradas_habilitadas
-               WHERE codigo = @codigo)
-        SET @resultado = 1;
-    ELSE
-        SET @resultado = 0;
+    if exists (select 1
+               from entrada as en
+               join compra as co
+               on en.id_compra = co.id_compra
+               join evento as ev
+               on en.id_evento = ev.id_evento
+               where en.codigo = @codigo
+                 and en.estado = 'HABILITADA'
+                 and co.estado_pago = 'PAGADO'
+                 and ev.estado = 'ACTIVO')
+        set @resultado = 1;
+    else
+        set @resultado = 0;
 
-    RETURN @resultado;
-END;
-GO
+    return @resultado;
+end;
+go

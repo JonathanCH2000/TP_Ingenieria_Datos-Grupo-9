@@ -35,13 +35,16 @@ go
 
 
 --Entradas utilizadas de un evento.
-select e.id_evento, e.nombre_evento, count(en.id_entrada) as entradas_utilizadas
-from entrada as en
-join evento as e
-on en.id_evento = e.id_evento
-where en.estado = 'UTILIZADA'
-group by e.id_evento, e.nombre_evento;
-go
+SELECT ev.id_evento,
+       ev.nombre_evento,
+       ev.fecha,
+       COUNT(en.id_entrada) AS entradas_utilizadas
+FROM evento AS ev
+LEFT JOIN entrada AS en
+    ON en.id_evento = ev.id_evento
+   AND en.estado = 'UTILIZADA'
+GROUP BY ev.id_evento, ev.nombre_evento, ev.fecha
+ORDER BY entradas_utilizadas DESC;
 
 --Recaudacion por evento
 select e.id_evento, e.nombre_evento, count(en.id_entrada) as entradas_vendidas, sum(en.precio) as recaudacion
@@ -62,8 +65,23 @@ join compra as co
 on c.id_cliente = co.id_cliente
 where co.estado_pago = 'PAGADO'
 group by c.id_cliente, c.nombre, c.apellido, c.email
-having count(co.id_compra) > 2;
+having count(co.id_compra) > 1;
 go
 
 USE GestionDeEntradas;
 GO
+
+-- Estadísticas de compra por cliente.
+SELECT c.id_cliente,
+       c.nombre,
+       c.apellido,
+       COUNT(co.id_compra) AS cantidad_compras,
+       MIN(co.total)       AS compra_minima,
+       MAX(co.total)       AS compra_maxima,
+       AVG(co.total)       AS ticket_promedio,
+       SUM(co.total)       AS total_gastado
+FROM cliente AS c
+INNER JOIN compra AS co
+    ON c.id_cliente = co.id_cliente
+GROUP BY c.id_cliente, c.nombre, c.apellido
+ORDER BY total_gastado DESC;
