@@ -35,12 +35,12 @@ go
 grant select on evento to rol_vendedor;
 grant select on lugar to rol_vendedor;
 grant select, insert, update on cliente to rol_vendedor;
-grant select, insert, update, delete on compra to rol_vendedor;
-grant select, insert, update, delete on entrada to rol_vendedor;
+grant select, insert, update on compra to rol_vendedor;
+grant select, insert, update on entrada to rol_vendedor;
 go
 
-revoke delete on compra from rol_vendedor;
-revoke delete on entrada from rol_vendedor;
+deny delete on compra to rol_vendedor;
+deny delete on entrada to rol_vendedor;
 go
 
 grant select on evento to rol_consulta;
@@ -49,4 +49,28 @@ grant select on compra to rol_consulta;
 grant select on entrada to rol_consulta;
 grant select (id_organizador, nombre, apellido) on organizador to rol_consulta;
 grant select (id_cliente, nombre, apellido) on cliente to rol_consulta;
+go
+
+-- Permisos sobre las vistas
+grant select on vw_ocupacion_evento to rol_vendedor;
+grant select on vw_entradas_habilitadas to rol_vendedor;
+go
+
+grant select on vw_ocupacion_evento to rol_consulta;
+grant select on vw_compras_detalle to rol_consulta;
+grant select on vw_entradas_habilitadas to rol_consulta;
+grant select on vw_recaudacion_organizador to rol_consulta;
+go
+
+-- Permisos sobre funciones y procedimientos
+grant execute on dbo.fn_monto_vigente_compra to rol_vendedor;
+grant execute on dbo.fn_cupo_disponible_evento to rol_vendedor;
+grant execute on dbo.fn_puede_ingresar to rol_vendedor;
+grant execute on dbo.registrar_compra to rol_vendedor;
+grant execute on dbo.registrar_ingreso to rol_vendedor;
+go
+
+grant execute on dbo.fn_total_calculado_compra to rol_administrador;
+grant execute on dbo.validar_cupo_eventos to rol_administrador;
+grant execute on dbo.cancelar_compras_evento to rol_administrador;
 go
