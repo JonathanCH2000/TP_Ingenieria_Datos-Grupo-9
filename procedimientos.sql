@@ -18,6 +18,7 @@ BEGIN
         JOIN compra AS c
             ON en.id_compra = c.id_compra
         WHERE c.estado_pago IN ('PENDIENTE', 'PAGADO')
+            AND en.estado <> 'ANULADA'
         GROUP BY ev.id_evento, l.capacidad
         HAVING COUNT(*) > l.capacidad
     )
