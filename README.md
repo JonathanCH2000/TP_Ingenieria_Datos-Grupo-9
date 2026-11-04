@@ -14,7 +14,7 @@ Base de datos en SQL Server para la venta de entradas a eventos: organizadores, 
 ## Modelo
 
 | Tabla | Qué representa |
-
+|---|---|
 | `organizador` | Quien produce y es responsable de cada evento |
 | `lugar` | Espacios donde se realizan los eventos, con su capacidad |
 | `evento` | Cada función, con su fecha, horario, lugar y organizador |
