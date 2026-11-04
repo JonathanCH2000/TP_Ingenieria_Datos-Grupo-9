@@ -64,14 +64,6 @@ Reglas de negocio principales:
 9. `cursores.sql`
 10. `seguridad.sql`
 
-El orden no es intercambiable en tres puntos:
-
-- `vistas.sql` va después de `funciones.sql`, porque `vw_compras_detalle` invoca a `fn_monto_vigente_compra`.
-- `triggers.sql` va después de `procedimientos.sql`, porque `trg_controlar_cupo_entradas` ejecuta `validar_cupo_eventos`.
-- `seguridad.sql` va último, porque otorga permisos sobre vistas, funciones y procedimientos que deben existir previamente.
-
-`CreacionDeLaBase.sql` ejecuta `DROP DATABASE` si la base ya existe, así que todo el proceso se puede repetir desde cero.
-
 ## Requisitos
 
 SQL Server con permisos de administrador del servidor. La sección de seguridad crea logins, que son objetos de nivel servidor y no de base de datos.
