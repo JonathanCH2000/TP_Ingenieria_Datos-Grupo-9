@@ -104,14 +104,3 @@ create table entrada(
 	constraint ck_entrada_estado check (estado in ('HABILITADA','UTILIZADA','ANULADA'))
 );
 go
-
-create trigger tr_actualizar_total
-on entrada
-after insert
-as
-begin
-	update compra
-	set total = (select sum(precio) from entrada where entrada.id_compra = compra.id_compra)
-	where id_compra in (select id_compra from inserted);
-end;
-go
