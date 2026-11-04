@@ -59,6 +59,7 @@ BEGIN
                 -- Si ya había una transacción abierta, devolvemos el error.
                 IF @transacciones_iniciales > 0
                 BEGIN
+                    CLOSE cursor_compras;
                     DEALLOCATE cursor_compras;
                     THROW;
                 END;
