@@ -4,7 +4,8 @@ Base de datos en SQL Server para la venta de entradas a eventos: organizadores, 
 
 ## Integrantes
 
-| Integrante | Rol en el TP |
+| Integrante | Parte del trabajo |
+|---|---|
 | John | Universo del discurso, DER y modelo relacional, primeros datos de prueba y primeras consultas. Creación del repositorio |
 | Gonza | Modelo de datos, datos de prueba, seguridad e integración del script completo |
 | Maxi | Consultas, subconsultas, vistas y funciones |
