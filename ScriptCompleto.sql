@@ -1,5 +1,3 @@
-/*LA IDEA DE ESTE ARCHIVO ES PODER CORRER TODO DE UNA A VER SI DA ERRORS O ALGO POR EL ESTILO*/
-
 use master;
 go
 
@@ -14,6 +12,8 @@ CREATE DATABASE GestionDeEntradas;
 GO
 USE GestionDeEntradas;
 GO
+
+--Tabla 1: organizador. quien produce y es responsable de cada evento
 
 create table organizador(
 	id_organizador int identity,
@@ -30,6 +30,8 @@ create table organizador(
 );
 go
 
+--Tabla 2: lugar. espacios donde se realizan los eventos, con su capacidad
+
 create table lugar(
 	id_lugar int identity,
 	nombre_lugar varchar(100) not null,
@@ -40,6 +42,8 @@ create table lugar(
 	constraint ck_lugar_capacidad check (capacidad > 0)
 );
 go
+
+--Tabla 3: evento. cada funcion con su fecha, horario, lugar y organizador
 
 create table evento(
 	id_evento int identity,
@@ -61,6 +65,8 @@ create table evento(
 );
 go
 
+--Tabla 4: cliente. quien compra entradas
+
 create table cliente(
 	id_cliente int identity,
 	nombre varchar(50) not null,
@@ -72,6 +78,8 @@ create table cliente(
 	constraint ck_cliente_email check (email like '%@%.%')
 );
 go
+
+--Tabla 5: compra. operacion de compra con su estado de pago y su total
 
 create table compra(
 	id_compra int identity,
@@ -87,6 +95,8 @@ create table compra(
 	constraint ck_compra_estado_pago check (estado_pago in ('PENDIENTE','PAGADO','CANCELADO'))
 );
 go
+
+--Tabla 6: entrada. cada entrada emitida, con codigo unico, precio y estado
 
 create table entrada(
 	id_entrada int identity,
@@ -107,19 +117,10 @@ create table entrada(
 );
 go
 
-create trigger tr_actualizar_total
-on entrada
-after insert
-as
-begin
-	update compra
-	set total = (select sum(precio) from entrada where entrada.id_compra = compra.id_compra)
-	where id_compra in (select id_compra from inserted);
-end;
-go
-
 use GestionDeEntradas;
 go
+
+--Datos de organizador
 
 insert into organizador (cuit, nombre, apellido, telefono, email) values
 ('20-30123456-7', 'Martin', 'Gomez', '11-4523-1100', 'mgomez@produccionesmg.com'),
@@ -134,6 +135,8 @@ insert into organizador (cuit, nombre, apellido, telefono, email) values
 ('20-25111222-5', 'Pablo', 'Ibarra', '11-3987-5500', 'pibarra@ibarrashows.com');
 go
 
+--Datos de lugar
+
 insert into lugar (nombre_lugar, direccion, capacidad) values
 ('Estadio Luna Park', 'Av. Madero 420, CABA', 8000),
 ('Teatro Gran Rex', 'Av. Corrientes 857, CABA', 3300),
@@ -146,6 +149,8 @@ insert into lugar (nombre_lugar, direccion, capacidad) values
 ('Teatro Maipo', 'Esmeralda 443, CABA', 700),
 ('Teatro Opera', 'Av. Corrientes 860, CABA', 2000);
 go
+
+--Datos de evento
 
 insert into evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio, hora_fin, estado) values
 (1, 1, 'Rock en el Luna', '20260815', '21:00', '23:30', 'FINALIZADO'),
@@ -160,6 +165,8 @@ insert into evento (id_organizador, id_lugar, nombre_evento, fecha, hora_inicio,
 (1, 2, 'Gala Sinfonica', '20270116', '20:00', '22:00', 'ACTIVO');
 go
 
+--Datos de cliente
+
 insert into cliente (nombre, apellido, email) values
 ('Juan', 'Perez', 'jperez@gmail.com'),
 ('Maria', 'Lopez', 'mlopez@gmail.com'),
@@ -172,6 +179,8 @@ insert into cliente (nombre, apellido, email) values
 ('Joaquin', 'Acosta', 'jacosta@gmail.com'),
 ('Florencia', 'Medina', 'fmedina@gmail.com');
 go
+
+--Datos de compra
 
 insert into compra (id_cliente, fecha, total, estado_pago) values
 (1, '20260720 10:15:00', 45000.00, 'PAGADO'),
@@ -188,6 +197,8 @@ insert into compra (id_cliente, fecha, total, estado_pago) values
 (1, '20261030 18:05:00', 22000.00, 'PAGADO');
 go
 
+--Datos de entrada
+
 insert into entrada (id_compra, id_evento, codigo, precio, estado) values
 (1, 1, 'ENT-0001', 45000.00, 'UTILIZADA'),
 (2, 1, 'ENT-0002', 45000.00, 'HABILITADA'),
@@ -201,6 +212,9 @@ insert into entrada (id_compra, id_evento, codigo, precio, estado) values
 (10, 6, 'ENT-0010', 52000.00, 'HABILITADA'),
 (11, 5, 'ENT-0011', 42000.00, 'HABILITADA'),
 (12, 8, 'ENT-0012', 22000.00, 'HABILITADA');
+go
+
+use GestionDeEntradas;
 go
 
 --Funcion 1: monto vigente de una compra
@@ -280,6 +294,9 @@ begin
 end;
 go
 
+use GestionDeEntradas;
+go
+
 --Vista 1: ocupacion de cada evento segun la capacidad del lugar
 
 create view vw_ocupacion_evento as
@@ -342,7 +359,10 @@ where co.estado_pago = 'PAGADO' and en.estado <> 'ANULADA'
 group by o.id_organizador, o.nombre, o.apellido;
 go
 
---Eventos activos y el lugar de realizacion.
+use GestionDeEntradas;
+go
+
+--Consulta 1: eventos activos y el lugar de realizacion
 select e.id_evento, e.nombre_evento, e.fecha, e.hora_inicio, e.hora_fin, l.nombre_lugar, l.direccion
 from evento as e
 join lugar as l
@@ -351,20 +371,20 @@ where e.estado = 'ACTIVO'
 order by e.fecha, e.hora_inicio;
 go
 
---Contacto del organizador de un evento
+--Consulta 2: contacto del organizador de cada evento
 select e.nombre_evento, o.nombre, o.apellido, o.telefono, o.email
 from evento as e
 join organizador as o
 on e.id_organizador = o.id_organizador;
 go
 
---Consultar las compras
+--Consulta 3: listado de compras ordenado por fecha
 select id_compra, fecha, total, estado_pago
 from compra
 order by fecha desc;
 go
 
---Muestra las compras pendientes y los datos del cliente
+--Consulta 4: compras pendientes con los datos del cliente
 select co.id_compra, co.fecha, co.total, c.nombre, c.apellido, c.email, co.estado_pago
 from compra as co
 join cliente as c
@@ -373,7 +393,7 @@ where co.estado_pago = 'PENDIENTE'
 order by co.fecha;
 go
 
---Entradas utilizadas de un evento.
+--Consulta 5: entradas utilizadas por evento
 select ev.id_evento, ev.nombre_evento, ev.fecha, count(en.id_entrada) as entradas_utilizadas
 from evento as ev
 left join entrada as en
@@ -382,7 +402,7 @@ group by ev.id_evento, ev.nombre_evento, ev.fecha
 order by entradas_utilizadas desc;
 go
 
---Recaudacion por evento
+--Consulta 6: recaudacion por evento, solo compras pagadas
 select e.id_evento, e.nombre_evento, count(en.id_entrada) as entradas_vendidas, sum(en.precio) as recaudacion
 from evento as e
 join entrada as en
@@ -394,7 +414,7 @@ group by e.id_evento, e.nombre_evento
 order by recaudacion desc;
 go
 
---Clientes frecuentes (mas de una compra pagada)
+--Consulta 7: clientes frecuentes, mas de una compra pagada
 select c.id_cliente, c.nombre, c.apellido, c.email, count(co.id_compra) as compras_pagadas
 from cliente as c
 join compra as co
@@ -404,7 +424,7 @@ group by c.id_cliente, c.nombre, c.apellido, c.email
 having count(co.id_compra) > 1;
 go
 
---Estadisticas de compra por cliente.
+--Consulta 8: estadisticas de compra por cliente
 select c.id_cliente, c.nombre, c.apellido, count(co.id_compra) as cantidad_compras,
 min(co.total) as compra_minima, max(co.total) as compra_maxima,
 avg(co.total) as ticket_promedio, sum(co.total) as total_gastado
@@ -415,8 +435,53 @@ group by c.id_cliente, c.nombre, c.apellido
 order by total_gastado desc;
 go
 
--- procedimientos
--- Comprueba que las entradas no superen la capacidad del lugar.
+use GestionDeEntradas;
+go
+
+--Subconsulta 1: clientes cuyo ticket promedio supera el ticket promedio del sistema
+select c.id_cliente, c.nombre, c.apellido, c.email,
+count(co.id_compra) as cantidad_compras,
+avg(co.total) as ticket_promedio
+from cliente as c
+join compra as co
+on c.id_cliente = co.id_cliente
+where co.estado_pago = 'PAGADO'
+group by c.id_cliente, c.nombre, c.apellido, c.email
+having avg(co.total) > (select avg(total) from compra where estado_pago = 'PAGADO')
+order by ticket_promedio desc;
+go
+
+--Subconsulta 2: eventos que no registran ninguna entrada vendida
+select e.id_evento, e.nombre_evento, e.fecha, e.estado, l.nombre_lugar
+from evento as e
+join lugar as l
+on e.id_lugar = l.id_lugar
+where not exists (select 1 from entrada as en where en.id_evento = e.id_evento)
+order by e.fecha;
+go
+
+--Subconsulta 3: compras cuyo importe supera el promedio de ese mismo cliente
+select c.id_cliente, c.nombre, c.apellido, co.id_compra, co.fecha, co.total, co.estado_pago
+from compra as co
+join cliente as c
+on co.id_cliente = c.id_cliente
+where co.total > (select avg(co2.total) from compra as co2 where co2.id_cliente = co.id_cliente)
+order by c.apellido, co.total desc;
+go
+
+--Subconsulta 4: entradas cuyo precio supera el precio promedio de todas las entradas
+select en.id_entrada, en.codigo, en.precio, ev.nombre_evento, ev.fecha
+from entrada as en
+join evento as ev
+on en.id_evento = ev.id_evento
+where en.precio > (select avg(precio) from entrada)
+order by en.precio desc;
+go
+
+USE GestionDeEntradas;
+GO
+
+--Procedimiento 1: comprueba que las entradas no superen la capacidad del lugar
 CREATE PROCEDURE validar_cupo_eventos
 AS
 BEGIN
@@ -433,6 +498,7 @@ BEGIN
         JOIN compra AS c
             ON en.id_compra = c.id_compra
         WHERE c.estado_pago IN ('PENDIENTE', 'PAGADO')
+          AND en.estado <> 'ANULADA'
         GROUP BY ev.id_evento, l.capacidad
         HAVING COUNT(*) > l.capacidad
     )
@@ -442,7 +508,7 @@ BEGIN
 END;
 GO
 
--- Registra el ingreso cuando la entrada cumple las condiciones.
+--Procedimiento 2: registra el ingreso cuando la entrada cumple las condiciones
 CREATE PROCEDURE registrar_ingreso
     @codigo varchar(20),
     @id_evento int
@@ -488,7 +554,7 @@ BEGIN
 END;
 GO
 
--- Registra una compra y sus entradas en una misma transacción.
+--Procedimiento 3: registra una compra y sus entradas en una misma transaccion
 CREATE PROCEDURE registrar_compra
     @id_cliente int,
     @id_evento int,
@@ -582,8 +648,10 @@ BEGIN
 END;
 GO
 
--- triggers (pendiente)
--- Actualiza el total de la compra al agregar, modificar o eliminar entradas.
+USE GestionDeEntradas;
+GO
+
+--Trigger 1: actualiza el total de la compra al agregar, modificar o eliminar entradas
 CREATE TRIGGER trg_actualizar_total_compra
 ON entrada
 AFTER INSERT, UPDATE, DELETE
@@ -611,7 +679,7 @@ BEGIN
 END;
 GO
 
--- Anula las entradas cuando se cancela una compra.
+--Trigger 2: anula las entradas cuando se cancela una compra
 CREATE TRIGGER trg_cancelar_compra
 ON compra
 AFTER UPDATE
@@ -647,7 +715,7 @@ BEGIN
 END;
 GO
 
--- Evita que dos eventos se superpongan en el mismo lugar y fecha.
+--Trigger 3: evita que dos eventos se superpongan en el mismo lugar y fecha
 CREATE TRIGGER trg_evitar_superposicion_eventos
 ON evento
 AFTER INSERT, UPDATE
@@ -673,7 +741,7 @@ BEGIN
 END;
 GO
 
--- Controla el cupo al agregar o modificar entradas.
+--Trigger 4: controla el cupo al agregar o modificar entradas
 CREATE TRIGGER trg_controlar_cupo_entradas
 ON entrada
 AFTER INSERT, UPDATE
@@ -686,7 +754,7 @@ BEGIN
 END;
 GO
 
--- Controla el cupo cuando se actualiza el estado de pago.
+--Trigger 5: controla el cupo cuando se actualiza el estado de pago
 CREATE TRIGGER trg_controlar_cupo_compras
 ON compra
 AFTER UPDATE
@@ -699,7 +767,7 @@ BEGIN
 END;
 GO
 
--- Controla el cupo cuando se cambia el lugar de un evento.
+--Trigger 6: controla el cupo cuando se cambia el lugar de un evento
 CREATE TRIGGER trg_controlar_cupo_eventos
 ON evento
 AFTER UPDATE
@@ -712,7 +780,7 @@ BEGIN
 END;
 GO
 
--- Controla el cupo cuando se modifica la capacidad de un lugar.
+--Trigger 7: controla el cupo cuando se modifica la capacidad de un lugar
 CREATE TRIGGER trg_controlar_cupo_lugares
 ON lugar
 AFTER UPDATE
@@ -725,8 +793,88 @@ BEGIN
 END;
 GO
 
+USE GestionDeEntradas;
+GO
+
+--Cursor 1: procesa las cancelaciones de un evento compra por compra
+CREATE PROCEDURE cancelar_compras_evento
+    @id_evento int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @id_compra int;
+    DECLARE @entradas_utilizadas int;
+    DECLARE @transacciones_iniciales int = @@TRANCOUNT;
+
+    -- Seleccionamos compras pendientes o pagadas.
+    -- Todas las entradas de cada compra deben ser del evento indicado.
+    DECLARE cursor_compras CURSOR FOR
+        SELECT c.id_compra
+        FROM compra AS c
+        JOIN entrada AS en
+            ON c.id_compra = en.id_compra
+        WHERE c.estado_pago = 'PENDIENTE'
+           OR c.estado_pago = 'PAGADO'
+        GROUP BY c.id_compra
+        HAVING SUM(CASE WHEN en.id_evento = @id_evento THEN 1 ELSE 0 END) = COUNT(*)
+        ORDER BY c.id_compra;
+
+    OPEN cursor_compras;
+
+    FETCH NEXT FROM cursor_compras INTO @id_compra;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Revisamos si ya se usó alguna entrada de la compra.
+        SELECT @entradas_utilizadas = COUNT(*)
+        FROM entrada
+        WHERE id_compra = @id_compra
+            AND estado = 'UTILIZADA';
+
+        IF @entradas_utilizadas > 0
+        BEGIN
+            PRINT CONCAT('Compra ', @id_compra, ': omitida porque tiene entradas utilizadas.');
+        END
+        ELSE
+        BEGIN
+            BEGIN TRY
+                -- Al cancelar la compra, el trigger anula sus entradas.
+                UPDATE compra
+                SET estado_pago = 'CANCELADO'
+                WHERE id_compra = @id_compra
+                    AND (estado_pago = 'PENDIENTE' OR estado_pago = 'PAGADO');
+
+                -- Mostramos cómo quedó la compra.
+                SELECT id_compra, estado_pago
+                FROM compra
+                WHERE id_compra = @id_compra;
+            END TRY
+            BEGIN CATCH
+                -- Si ya había una transacción abierta, devolvemos el error.
+                IF @transacciones_iniciales > 0
+                BEGIN
+                    CLOSE cursor_compras;
+                    DEALLOCATE cursor_compras;
+                    THROW;
+                END;
+
+                PRINT CONCAT('Compra ', @id_compra, ': ', ERROR_MESSAGE());
+            END CATCH;
+        END;
+
+        FETCH NEXT FROM cursor_compras INTO @id_compra;
+    END;
+
+    CLOSE cursor_compras;
+    DEALLOCATE cursor_compras;
+END;
+GO
+
 use GestionDeEntradas;
 go
+
+--Logins de servidor
 
 if not exists (select name from sys.server_principals where name = 'login_admin')
 	create login login_admin with password = 'Admin.2026';
@@ -736,20 +884,28 @@ if not exists (select name from sys.server_principals where name = 'login_analis
 	create login login_analista with password = 'Analista.2026';
 go
 
+--Usuarios de la base
+
 create user usr_admin for login login_admin;
 create user usr_vendedor for login login_vendedor;
 create user usr_analista for login login_analista;
 go
+
+--Roles
 
 create role rol_administrador;
 create role rol_vendedor;
 create role rol_consulta;
 go
 
+--Asignacion de usuarios a roles
+
 alter role rol_administrador add member usr_admin;
 alter role rol_vendedor add member usr_vendedor;
 alter role rol_consulta add member usr_analista;
 go
+
+--Permisos del administrador
 
 grant select, insert, update, delete on organizador to rol_administrador;
 grant select, insert, update, delete on lugar to rol_administrador;
@@ -759,16 +915,22 @@ grant select, insert, update, delete on compra to rol_administrador;
 grant select, insert, update, delete on entrada to rol_administrador;
 go
 
+--Permisos del vendedor
+
 grant select on evento to rol_vendedor;
 grant select on lugar to rol_vendedor;
 grant select, insert, update on cliente to rol_vendedor;
-grant select, insert, update, delete on compra to rol_vendedor;
-grant select, insert, update, delete on entrada to rol_vendedor;
+grant select, insert, update on compra to rol_vendedor;
+grant select, insert, update on entrada to rol_vendedor;
 go
 
-revoke delete on compra from rol_vendedor;
-revoke delete on entrada from rol_vendedor;
+--DENY prohibe explicitamente y prevalece sobre cualquier GRANT
+--que el usuario pudiera heredar por pertenecer a otro rol.
+deny delete on compra to rol_vendedor;
+deny delete on entrada to rol_vendedor;
 go
+
+--Permisos del rol de consulta
 
 grant select on evento to rol_consulta;
 grant select on lugar to rol_consulta;
@@ -778,5 +940,28 @@ grant select (id_organizador, nombre, apellido) on organizador to rol_consulta;
 grant select (id_cliente, nombre, apellido) on cliente to rol_consulta;
 go
 
-select db_name() as base_actual;
+--Permisos sobre las vistas
+
+grant select on vw_ocupacion_evento to rol_vendedor;
+grant select on vw_entradas_habilitadas to rol_vendedor;
+go
+
+grant select on vw_ocupacion_evento to rol_consulta;
+grant select on vw_compras_detalle to rol_consulta;
+grant select on vw_entradas_habilitadas to rol_consulta;
+grant select on vw_recaudacion_organizador to rol_consulta;
+go
+
+--Permisos sobre funciones y procedimientos
+
+grant execute on dbo.fn_monto_vigente_compra to rol_vendedor;
+grant execute on dbo.fn_cupo_disponible_evento to rol_vendedor;
+grant execute on dbo.fn_puede_ingresar to rol_vendedor;
+grant execute on dbo.registrar_compra to rol_vendedor;
+grant execute on dbo.registrar_ingreso to rol_vendedor;
+go
+
+grant execute on dbo.fn_total_calculado_compra to rol_administrador;
+grant execute on dbo.validar_cupo_eventos to rol_administrador;
+grant execute on dbo.cancelar_compras_evento to rol_administrador;
 go
